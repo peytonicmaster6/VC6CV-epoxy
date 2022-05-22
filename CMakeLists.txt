@@ -1,0 +1,59 @@
+cmake_minimum_required(VERSION 3.7)
+project(VC6CV)
+
+# For desktop compilation
+#cmake_policy(SET CMP0015 NEW)
+#cmake_policy(SET CMP0081 OLD)
+
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -std=gnu99 -g")
+
+# Set --no-as-needed to stop the linker discarding mmal_vc_client
+# as it can't see that the constructor registers a load of functionality
+# with the MMAL core.
+#SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed" )
+
+#include_directories(/usr/include/)
+include_directories(/opt/vc/include/interface/)
+include_directories(/opt/vc/include/interface/vcos/pthreads)
+include_directories(/opt/vc/include/interface/vmcs_host/linux)
+include_directories(/opt/vc/include/interface/vcsm)
+
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+add_executable(VC6CV main_gl.cpp)
+target_link_libraries(VC6CV ${SDL2_LIBRARIES})
+
+find_library(LIB_BCMH NAMES bcm_host HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_VCOS NAMES vcos HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_VCSM NAMES vcsm HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_MMAL NAMES mmal HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_MMAL_CORE NAMES mmal_core HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_MMAL_UTIL NAMES mmal_util HINTS /home/jarvis/userland/build/lib)
+find_library(LIB_MMAL_COMP NAMES mmal_components HINTS /home/jarvis/userland/build/lib)
+#find_library(LIB_BEGL NAMES EGL HINTS /usr/lib/arm-linux-gnueabihf)
+#find_library(LIB_GLES2 NAMES GLESv2 HINTS /usr/lib/arm-linux-gnueabihf)
+#find_library(LIB_GLES NAMES GLESv1_CM HINTS /usr/lib/arm-linux-gnueabihf)
+find_library(LIB_EPOXY NAMES epoxy HINTS /usr/lib/arm-linux-gnueabihf)
+
+set(VC6CV_GL_SOURCES
+   camera/gcs.c
+   camera/camGL.c
+   gl/eglUtil.c
+   gl/mesh.cpp
+   gl/shader.cpp
+   gl/texture.cpp)
+
+set(VC6CV_LIBRARIES
+	m dl pthread
+	${LIB_BCMH} ${LIB_VCOS} ${LIB_VCSM} ${SDL2_LIBRARIES}
+	${LIB_MMAL} ${LIB_MMAL_CORE} ${LIB_MMAL_UTIL} ${LIB_MMAL_COMP} ${LIB_EPOXY})
+set(VC6CV_GL_LIBRARIES
+	${SDL2_LIBRARIES} ${LIB_EPOXY})
+
+# Grouped targets
+add_custom_target(gl DEPENDS GLCV)
+
+# GL CV sample application
+add_executable(GLCV ${VC6CV_GL_SOURCES} main_gl.cpp)
+target_link_libraries(GLCV ${VC6CV_LIBRARIES} ${VC6CV_GL_LIBRARIES})
+target_include_directories(GLCV PRIVATE gl camera)
