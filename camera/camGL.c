@@ -6,6 +6,7 @@
 
 #include "gcs.h"
 #include "camGL.h"
+//#include "glhelp.h"
 
 //#include <GLES3/gl3.h>
 //#include <GLES2/gl2ext.h>
@@ -13,6 +14,7 @@
 #include <epoxy/egl.h>
 //#include <EGL/eglext.h>
 #include <epoxy/gl.h>
+#include <epoxy/glx.h>
 //#include <EGL/eglext_brcm.h>
 #include "interface/vcos/vcos.h"
 #include "interface/vcos/vcos_stdint.h"
@@ -341,7 +343,9 @@ static int camGL_processCameraFrame(CamGL *camGL, void *frameBuffer)
 			CHECK_GL(camGL);
 
 			EGLint createAttributes[] = {
-				EGL_NATIVE_PIXMAP_KHR, EGL_KHR_image, EGL_KHR_image_base,
+				EGL_LINUX_DRM_FOURCC_EXT, EGL_DMA_BUF_PLANE0_FD_EXT,
+				EGL_DMA_BUF_PLANE0_OFFSET_EXT, EGL_DMA_BUF_PLANE0_PITCH_EXT,
+				EGL_KHR_image, EGL_KHR_image_base, EGL_NATIVE_PIXMAP_KHR,
 				EGL_NONE
 			};
 
@@ -349,7 +353,7 @@ static int camGL_processCameraFrame(CamGL *camGL, void *frameBuffer)
 			// Create EGL textures from frame buffers according to format
 			if (camGL->params.format == CAMGL_RGB)
 			{	
-				frameInt->eglImageRGB = eglCreateImageKHR(camGL->eglSetup.display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)frameBuffer, createAttributes);
+				frameInt->eglImageRGB = eglCreateImageKHR(camGL->eglSetup.display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, createAttributes);
 				CHECK_EVAL(frameInt->eglImageRGB != EGL_NO_IMAGE_KHR, "Failed to convert frame buffer to RGB EGL image!", errorKHR);
 			}
 			else

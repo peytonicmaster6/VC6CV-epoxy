@@ -4,6 +4,11 @@
 #include <iostream>
 #include <epoxy/gl.h>
 #include <epoxy/egl.h>
+//#include <epoxy/glx.h>
+//#include "glhelp.h"
+
+#define EGL_KHR_image_base 1
+#define EGL_KHR_image 1
 
 static int nextPOT (int NPOT)
 {
